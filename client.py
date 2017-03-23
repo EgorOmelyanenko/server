@@ -4,7 +4,7 @@ import asyncio
 async def fetch(client):
     url = 'http://localhost:8080/'
     data={}
-    data["text"] = "abcd"
+    data["text"] = 'abcd'
     async with client.post(url,data=data) as resp:
           return await resp.text()
 
