@@ -1,15 +1,19 @@
-import aiohttp
-import asyncio
-
+import aiohttp,asyncio
+import ssl,pathlib
 async def fetch(client):
-    url = 'http://localhost:8080/'
+    url = 'https://localhost:8080/'
     data={}
     data["text"] = 'abcd'
     async with client.post(url,data=data) as resp:
           return await resp.text()
 
 async def main(loop):
-    async with aiohttp.ClientSession(loop=loop) as client:
+    here = pathlib.Path(__file__)
+    ssl_cert = here.parent / 'server.crt'
+    sslcontext = ssl.create_default_context(cafile=str(ssl_cert))
+    conn = aiohttp.TCPConnector(ssl_context=sslcontext)
+    async with aiohttp.ClientSession(loop=loop,connector=conn) as client:
+
         html = await fetch(client)
         print(html)
 
