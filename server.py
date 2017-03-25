@@ -4,8 +4,9 @@ from aiohttp import web # ставил pip3 install aiohttp
 class Server(asyncio.Protocol):
 
     async def req_post(request):  # обработчик запроса
-        print ('connected')
+
         data=await request.post()
+        print('connected, data = ' + str(data["text"]))
         return web.Response(text='hello post'+' '+str(data["text"]).upper())
 
 if __name__ == "__main__":
