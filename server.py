@@ -1,5 +1,6 @@
-import asyncio, time, ssl, pathlib
+import asyncio, time, ssl, pathlib,json
 from aiohttp import web # ставил pip3 install aiohttp
+from db import *
 
 class Server(asyncio.Protocol):
 
@@ -7,7 +8,14 @@ class Server(asyncio.Protocol):
 
         data=await request.post()
         print('connected, data = ' + str(data["text"]))
-        return web.Response(text='hello post'+' '+str(data["text"]).upper())
+        rtrn=dict()
+        sel_res=select()
+        i=1
+        for r in sel_res:
+            rtrn[i]={"id_log":r[0], "id_user":r[1],"result":r[2],"may":r[3],"action":r[4]}
+            i=i+1
+
+        return web.json_response(rtrn)
 
 if __name__ == "__main__":
     app = web.Application()  
