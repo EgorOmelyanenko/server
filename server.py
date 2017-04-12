@@ -8,12 +8,16 @@ class Server(asyncio.Protocol):
 
         data=await request.post()
         print('connected, data = ' + str(data["text"]))
+
         rtrn=dict()
-        sel_res=select()
-        i=1
-        for r in sel_res:
-            rtrn[i]={"id_log":r[0], "id_user":r[1],"result":r[2],"may":r[3],"action":r[4]}
-            i=i+1
+        if data["text"]=="select":
+            sel_res=select()
+            i=1
+            for r in sel_res:
+                rtrn[i]={"id_log":r[0], "id_user":r[1],"result":r[2],"may":r[3],"action":r[4]}
+                i=i+1
+        else:
+            sel_res=other_operation(data["text"])
 
         return web.json_response(rtrn)
 
