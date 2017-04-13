@@ -13,8 +13,7 @@ async def main(loop):
     sslcontext = ssl.create_default_context(cafile=str(ssl_cert))
     conn = aiohttp.TCPConnector(ssl_context=sslcontext)
     async with aiohttp.ClientSession(loop=loop,connector=conn) as client:
-
-        html = eval(await fetch(client))
+        html = await fetch(client)
         print(html)
 loop = asyncio.get_event_loop()
 loop.run_until_complete(main(loop))

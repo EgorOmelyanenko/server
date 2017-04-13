@@ -11,11 +11,8 @@ class Server(asyncio.Protocol):
 
         rtrn=dict()
         if data["text"]=="select":
-            sel_res=select()
-            i=1
-            for r in sel_res:
-                rtrn[i]={"id_log":r[0], "id_user":r[1],"result":r[2],"may":r[3],"action":r[4]}
-                i=i+1
+            rtrn = select()
+
         else:
             sel_res=other_operation(data["text"])
 
