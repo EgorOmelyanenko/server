@@ -5,6 +5,7 @@ import datetime
 Base = declarative_base()
 engine = create_engine('postgresql://postgres:1234@localhost:5432/log_db')
 meta= MetaData(bind=engine)
+
 class log(Base):
     __tablename__ = 'log'
     id_log = Column(Integer, primary_key=True)
@@ -21,28 +22,31 @@ class log(Base):
         self.action=action
         self.action_time=action_time
 
-def retr(sel):
+def retr(row):
         return "{'id_log':%s,'id_user':%s,'result':%s,'may':%s,'action':%s,'action_time':%s}" % \
-               (sel.id_log,sel.id_user,sel.result,sel.may,sel.action,sel.action_time)
+               (row.id_log,row.id_user,row.result,row.may,row.action,row.action_time)
 
 session = Session(bind=engine)
 
 
 
 def select():
-    other_operation('select')
     res = []
     for r in session.query(log).all():
         res.append(retr(r))
     return res
 
-def other_operation(operation):
+def other_operation(operation,error,id_user=None):
     id_log=(session.query(func.max(log.id_log)).first()[0])
     if (id_log != None):
         id_log = int(session.query(func.max(log.id_log)).first()[0])+1
     else:
         id_log=1
-    new = log(id_log = id_log, id_user = 2,result = 2, may = 2, action = operation, action_time=datetime.datetime.now())
+    if (id_user!=None):
+
+        operation = operation + '-' + id_user
+    print(operation)
+    new = log(id_log = id_log, id_user = 2,result = error, may = 2, action = operation, action_time=datetime.datetime.now())
     session.add(new)
     session.commit()
 
@@ -50,5 +54,5 @@ def other_operation(operation):
 
 
 
-select()
+
 
