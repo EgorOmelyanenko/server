@@ -4,7 +4,7 @@ import db_log, sdk
 import JsonDataBase as jdb
 
 class Server(asyncio.Protocol):
-    #OK
+
     async def req_post(request):  # обработчик запроса POST
 
         print('connected, operation = POST')
@@ -38,7 +38,7 @@ class Server(asyncio.Protocol):
 
         else:
             return web.json_response(None)
-    #OK
+
     async def req_put(request):  # обработчик запроса PUT
         params = request.query
         print(request.method, params)
@@ -66,13 +66,13 @@ class Server(asyncio.Protocol):
             jdb.DelInfo(id_del)
         db_log.other_operation(params['operation'],error, id_user=str(id_del))
         return web.json_response(1)
-    #OK
+
     async def req_get(request):  # обработчик запроса GET
         params = request.query
 
         print(request.method, params)
         if params['operation']=='get_info':
-            return web.json_response(jdb.GetInfo(params['text']['id']))
+            return web.json_response(jdb.GetInfo(params['id']))
         elif params['operation']=='get_all_id':
             return web.json_response(jdb.GetAllId())
 
@@ -80,10 +80,10 @@ class Server(asyncio.Protocol):
             return web.json_response(db_log.select())
 
         elif params['operation']=='get_profile_imgs_id':
-            return web.json_response(sdk.get_profile_imgs_id(params['text']['id']))
+            return web.json_response(sdk.get_profile_imgs_id(params['id']))
 
-        elif params['operation']=='get_profile_imgs_id':
-            return web.json_response(sdk.get_profile_imgs_id(params['text']['id']))
+        elif params['operation']=='get_profile_image':
+            return web.json_response(sdk.get_profile_image(params['id']))
 
         else:
             return web.json_response(None)
