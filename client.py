@@ -1,31 +1,29 @@
 import aiohttp,asyncio,json
 import ssl,pathlib
 async def fetch(client):
-    url = 'https://localhost:8081/'
-    data={}
-    data['operation'] = 'get_log'
-    data['text']=str({'id':'14899','name':'Egor','birth':'29.12.9999', 'tag':'EGOR_SUPER_POMIDOR', 'gender':'m'})
-
+    url = 'https://localhost:8080/'
+    param={}
+    param['operation'] = 'delete_profile'
+    param.update({'id':'14882','name':'Egor','birth':'29.12.9999', 'tag':'SUPER_PUPER_POMIDOR', 'gender':'m'})
+    print (param)
     #POST
-    if (data['operation'] == 'add_profile'):
-        async with client.post(url,data=data) as resp:
+    if (param['operation'] == 'add_profile'):
+        async with client.post(url,params=param) as resp:
           return await resp.text()
-    #GET
-    elif (data['operation'] == 'get_info' or 'get_log' or 'get_all_id'):
-        par={'operation':data['operation']}
-        if 'text' in data.keys():
-            par['id']=eval(data['text'])['id']
-        async with client.get(url, params = par) as resp:
-            print(resp.url)
+    elif (param['operation'] == 'ident_profile'):
+        async with client.post(url,data=open(r'img/737-66.jpg','rb'),params=param) as resp:
+          return await resp.text()
+    # PUT
+    elif (param['operation'] == 'update_profile'):
+        async with client.put(url,params=param) as resp:
             return await resp.text()
-    #PUT
-    elif (data['operation'] == 'update_profile'):
-        async with client.put(url,data=data) as resp:
-            print(resp.url)
+    # DELETE
+    elif (param['operation'] == 'delete_profile'):
+        async with client.delete(url,params=param) as resp:
             return await resp.text()
-    #DELETE
-    elif (data['operation'] == 'delete_profile'):
-        async with client.delete(url,data=data) as resp:
+    # GET
+    elif (param['operation'] == 'get_info' or 'get_log' or 'get_all_id' or 'get_profile_imgs_id' or 'get_profile_image'):
+        async with client.get(url, params=param) as resp:
             return await resp.text()
     else:
         return 'Неправильная операция'

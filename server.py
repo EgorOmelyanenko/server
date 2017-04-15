@@ -4,65 +4,87 @@ import db_log, sdk
 import JsonDataBase as jdb
 
 class Server(asyncio.Protocol):
-
+    #OK
     async def req_post(request):  # обработчик запроса POST
 
-        data=await request.post()
-        data_body=eval(data['text'])
+        print('connected, operation = POST')
+        params = request.query
+        print (request.method, params)
 
-        print('connected, operation = ' + str(data["operation"]) + ', data =' + str(data_body) )
-
-        rtrn=dict()
-        if  data['operation']=="add_profile":
-            per = sdk.add_profile(name=data_body['name'],birth=data_body['birth'],
-                                  tag=data_body['tag'], gender=data_body['gender'])
+        if  params['operation']=='add_profile':
+            #params_text = params['text']
+            per = sdk.add_profile(name=params['name'],birth=params['birth'],
+                                  tag=params['tag'], gender=params['gender'])
             id_user = per.pop('result')
-            jdb.AddInfo(id=id_user,name=data_body['name'],birth=data_body['birth'],
-                        tag=data_body['tag'], gender=data_body['gender'])
-            db_log.other_operation(data['operation'],error=per.pop('error'),id_user=str(id_user))
+            error= per.pop('error')
+            jdb.AddInfo(id=id_user,name=params['name'],birth=params['birth'],
+                        tag=params['tag'], gender=params['gender'])
+            db_log.other_operation(params['operation'],error=error,id_user=str(id_user))
+            return web.json_response(error)
 
-
-        return web.json_response(rtrn)
-
-    async def req_put(request):  # обработчик запроса PUT
-        data = await request.post()
-        print(request.url)
-        data_body = eval(data['text'])
-
-        print('connected, operation = ' + str(data["operation"]) + ', data =' + str(data_body))
-
-        rtrn = dict()
-        if data['operation'] == "update_profile":
-            if (jdb.GetInfo(data_body['id']) != None):
-                jdb.UpdateInfo(id=data_body['id'],name=data_body['name'],birth=data_body['birth'],
-                               tag=data_body['tag'], gender=data_body['gender'])
+        elif params['operation']=='ident_profile':
+            data=await request.read()
+            file=open(r'srvimg/img.jpg','wb')
+            file.write(data)
+            rtrn = sdk.ident_profile()
+            db_log.other_operation(params['operation'], error=rtrn['error'], id_user=str(rtrn['result'][0]['profile_id']))
+            if rtrn['error']==0:
+                rtrn['score'] = rtrn['result'][0]['score']
+                rtrn['result'] = jdb.GetInfo(rtrn['result'][0]['profile_id'])
+                rtrn.pop('error')
+                return web.json_response(rtrn)
             else:
-                jdb.AddInfoid(id=data_body['id'],name=data_body['name'],birth=data_body['birth'],
-                tag=data_body['tag'], gender=data_body['gender'])
-            db_log.other_operation(data['operation'], error=0,id_user=str(data_body['id']))
+                return web.json_response('Профиль не распознан')
 
-        return web.json_response(rtrn)
+        else:
+            return web.json_response(None)
+    #OK
+    async def req_put(request):  # обработчик запроса PUT
+        params = request.query
+        print(request.method, params)
+        print(params['operation'])
+        rtrn = dict()
+        if params['operation'] == 'update_profile':
+            if (jdb.GetInfo(params['id']) != None):
+                jdb.UpdateInfo(id=params['id'],name=params['name'],birth=params['birth'],
+                               tag=params['tag'], gender=params['gender'])
+            else:
+                jdb.AddInfoid(id=params['id'],name=params['name'],birth=params['birth'],
+                tag=params['tag'], gender=params['gender'])
+            db_log.other_operation(params['operation'], error=0,id_user=params['id'])
+            return web.json_response(rtrn)
+        else:
+            return web.json_response(None)
 
     async def req_del(request):  # обработчик запроса DELETE
-        data = dict(await request.post())
-        print(data)
+        params = request.query
+        print(request.method, params)
         print('connected, method - DELETE')
-        id_del = eval(data['text'])['id']
+        id_del = params['id']
         error = sdk.del_profile(id_del)
         if (error!=1):
             jdb.DelInfo(id_del)
-        db_log.other_operation(data['operation'],error, id_user=str(id_del))
-        return web.json_response()
-
+        db_log.other_operation(params['operation'],error, id_user=str(id_del))
+        return web.json_response(1)
+    #OK
     async def req_get(request):  # обработчик запроса GET
-        data = request.query
-        print(data)
-        if data['operation']=='get_info':
-            return web.json_response(jdb.GetInfo(data['id']))
-        elif data['operation']=='get_all_id':
+        params = request.query
+
+        print(request.method, params)
+        if params['operation']=='get_info':
+            return web.json_response(jdb.GetInfo(params['text']['id']))
+        elif params['operation']=='get_all_id':
             return web.json_response(jdb.GetAllId())
-        elif data['operation']=='get_log':
+
+        elif params['operation']=='get_log':
             return web.json_response(db_log.select())
+
+        elif params['operation']=='get_profile_imgs_id':
+            return web.json_response(sdk.get_profile_imgs_id(params['text']['id']))
+
+        elif params['operation']=='get_profile_imgs_id':
+            return web.json_response(sdk.get_profile_imgs_id(params['text']['id']))
+
         else:
             return web.json_response(None)
 
@@ -84,7 +106,7 @@ if __name__ == "__main__":
     ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
     ssl_context.load_cert_chain(str(ssl_cert), str(ssl_key))
     #ssl
-    server_coro = loop.create_server(app.make_handler(), 'localhost',8081,ssl=ssl_context)
+    server_coro = loop.create_server(app.make_handler(), 'localhost',8080,ssl=ssl_context)
     server = loop.run_until_complete(server_coro)
     loop.run_forever()
     loop.close()

@@ -45,7 +45,6 @@ def other_operation(operation,error,id_user=None):
     if (id_user!=None):
 
         operation = operation + '-' + id_user
-    print(operation)
     new = log(id_log = id_log, id_user = 2,result = error, may = 2, action = operation, action_time=datetime.datetime.now())
     session.add(new)
     session.commit()
