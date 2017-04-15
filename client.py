@@ -3,31 +3,32 @@ import ssl,pathlib
 async def fetch(client):
     url = 'https://localhost:8081/'
     data={}
-    data['operation'] = 'select'
+    data['operation'] = 'get_log'
     data['text']=str({'id':'14899','name':'Egor','birth':'29.12.9999', 'tag':'EGOR_SUPER_POMIDOR', 'gender':'m'})
-    kwargs = {'123':'123'}
-    #в зависимости от операции вызываем нужный метод
-    if (data["operation"] == 'add_profile'):
+
+    #POST
+    if (data['operation'] == 'add_profile'):
         async with client.post(url,data=data) as resp:
           return await resp.text()
-########################################
-    elif (data["operation"] == 'get_profile_info'):
-        par={'id':14899}
+    #GET
+    elif (data['operation'] == 'get_info' or 'get_log' or 'get_all_id'):
+        par={'operation':data['operation']}
+        if 'text' in data.keys():
+            par['id']=eval(data['text'])['id']
         async with client.get(url, params = par) as resp:
             print(resp.url)
             return await resp.text()
- #######################################
-    elif (data["operation"] == 'select'):
-            async with client.get(url) as resp:
-                       return await resp.text()
-
-    elif (data["operation"] == 'update_profile'):
+    #PUT
+    elif (data['operation'] == 'update_profile'):
         async with client.put(url,data=data) as resp:
             print(resp.url)
             return await resp.text()
-    elif (data["operation"] == 'delete_profile'):
+    #DELETE
+    elif (data['operation'] == 'delete_profile'):
         async with client.delete(url,data=data) as resp:
             return await resp.text()
+    else:
+        return 'Неправильная операция'
 
 
 async def main(loop):

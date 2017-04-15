@@ -54,26 +54,19 @@ class Server(asyncio.Protocol):
         db_log.other_operation(data['operation'],error, id_user=str(id_del))
         return web.json_response()
 
-    async def req_get_param(request):  # обработчик запроса GET
-
-        data = request.match_info.get('id')
-        print(request, data)
-        """
-        print('connected, method - GET')
-        if data['operation'] == "select_log":
-            rtrn = db_log.select()
-        elif data['operation'] == 'get_profile_info':
-            rtrn=jdb.GetInfo(id=eval(data['text'])['id'])
-            print(rtrn)
-        """
-        return web.json_response({})
-
     async def req_get(request):  # обработчик запроса GET
+        data = request.query
+        print(data)
+        if data['operation']=='get_info':
+            return web.json_response(jdb.GetInfo(data['id']))
+        elif data['operation']=='get_all_id':
+            return web.json_response(jdb.GetAllId())
+        elif data['operation']=='get_log':
+            return web.json_response(db_log.select())
+        else:
+            return web.json_response(None)
 
-        data = request.match_info.get('id')
-        print(request, data)
-        rtrn = db_log.select()
-        return web.json_response(rtrn)
+
 
 
 if __name__ == "__main__":
@@ -82,7 +75,6 @@ if __name__ == "__main__":
     app.router.add_post('/', Server.req_post)
     app.router.add_get('/', Server.req_get)
     app.router.add_put('/', Server.req_put)
-    app.router.add_get('/{id}', Server.req_get_param)
     app.router.add_delete('/', Server.req_del)
     loop = asyncio.get_event_loop()
     #ssl
